@@ -1,4 +1,4 @@
-# coverage-badge-action&nbsp;&nbsp;[![cov](https://we-cli.github.io/coverage-badge-action/badges/coverage.svg)](https://github.com/we-cli/coverage-badge-action/actions)
+# test-badge-action&nbsp;&nbsp;[![cov](https://we-cli.github.io/coverage-badge-action/badges/coverage.svg)](https://github.com/we-cli/coverage-badge-action/actions)
 
 ## Similar Projects
 
@@ -35,8 +35,8 @@
     python -m pip install --upgrade pip
     pip install pytest pytest-cov
     pip install -r requirements.txt
-- name: Test and Coverage
-  run: python -m pytest --cov --cov-report json
+- name: Test
+  run: python -m pytest --json-report
 # ...
 ```
 
@@ -63,15 +63,15 @@
 
     On your repository `Settings -> Action -> General -> Workflow permissions` choose `Read and Write permissions`
 
-2. Whatever the coverage tool is, don't forget to have `reporter=json-summary` enabled:
+2. Whatever the test tool is, don't forget to have `reporter=json-summary` enabled:
 
     ```diff
     // package.json
     -  "test:cov": "c8 xv",
     +  "test:cov": "c8 -r text -r json-summary xv",
     // or
-    -  "coverage": "nyc mocha",
-    +  "coverage": "nyc -r text -r json-summary mocha",
+    -  "test": "nyc mocha",
+    +  "test": "nyc -r text -r json-summary mocha",
     ```
 
 3. Add the action to your current workflow
@@ -89,32 +89,32 @@
           - uses: actions/setup-node@v3
           - name: Install
             run: npm install
-          - name: Test and Coverage
-            run: npm run test:cov  # or npm run coverage
+          - name: Test
+            run: npm run test  # or npm run test
 
           # Add this
-          - name: Update Coverage Badge
+          - name: Update test Badge
             # GitHub actions: default branch variable
             # https://stackoverflow.com/questions/64781462/github-actions-default-branch-variable
             if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-            uses: we-cli/coverage-badge-action@main
+            uses: we-cli/test-badge-action@main
     ```
 
 4. Add the badge to your README.md
 
     ```diff
     <!-- README.md -->
-    + [![cov](https://<you>.github.io/<repo>/badges/coverage.svg)](https://github.com/<you>/<repo>/actions)
+    + [![cov](https://<you>.github.io/<repo>/badges/test.svg)](https://github.com/<you>/<repo>/actions)
     ```
 
     Replace the `<you>` and `<repo>` above, like:
 
     ```diff
     <!-- README.md -->
-    + [![cov](https://we-cli.github.io/jayin/badges/coverage.svg)](https://github.com/we-cli/jayin/actions)
+    + [![cov](https://we-cli.github.io/jayin/badges/test.svg)](https://github.com/we-cli/jayin/actions)
     ```
 
 
     and you get:
 
-    [![cov](https://we-cli.github.io/coverage-badge-action/badges/coverage.svg)](https://github.com/we-cli/coverage-badge-action/actions)
+    [![cov](https://we-cli.github.io/test-badge-action/badges/test.svg)](https://github.com/we-cli/test-badge-action/actions)

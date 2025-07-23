@@ -1,5 +1,5 @@
-name: Coverage Badge
-description: Badges for test results and code coverage
+name: Tests Badge
+description: Badges for test results
 
 # Required for publishing to the marketplace:
 # Improve your Action by adding labels for icon and color.
@@ -14,15 +14,15 @@ runs:
       id: get-values
       shell: bash
       run: |
-        if [ -f "coverage/coverage-summary.json" ]; then
-          COV=$(node -p 't=require(`./coverage/coverage-summary.json`).total,Math.min(...`lines|statements|functions|branches`.split(`|`).map(k=>t[k].pct))')
-        elif [ -f "coverage.json" ]; then
-          COV=$(python -c 'import json; print(json.load(open("coverage.json"))["totals"]["percent_covered_display"])')
+        if [ -f ".report.json" ]; then
+          PASSED=$(python -c 'import json; print(json.load(open(".report.json"))["summary"]["passed"])')
+          TOTAL=$(python -c 'import json; print(json.load(open(".report.json"))["summary"]["total"])')
         else
-          echo "Error: Neither coverage/coverage-summary.json nor coverage.json found."
+          echo "Error: .report.json not found."
           exit 1
         fi
-        echo "coverage=$COV" >> $GITHUB_OUTPUT
+        echo "passed=$PASSED" >> $GITHUB_OUTPUT
+        echo "total=$TOTAL" >> $GITHUB_OUTPUT
 
       # pretend to be still https://github.com/stefanzweifel/git-auto-commit-action/blob/master/action.yml
     - name: Git Config
@@ -55,11 +55,12 @@ runs:
     - name: Create Badges
       shell: bash
       env:
-        COV: ${{ steps.get-values.outputs.coverage }}
+        PASSED: ${{ steps.get-values.outputs.passed }}
+        TOTAL: ${{ steps.get-values.outputs.total }}
       run: |
         npm i -g badgen-cli
-        COLOR=$(node -p '+process.env.COV >= 95 ? `green` : `orange`')
-        badgen -j coverage -s $COV% -c $COLOR > $RUNNER_TEMP/coverage.svg
+        COLOR='gray'
+        badgen -j tests -s "total: $TOTAL, passed: $PASSED" -c $COLOR > $RUNNER_TEMP/tests.svg
 
     - name: Deploy Badges
       uses: Wandalen/wretry.action@master
@@ -70,8 +71,8 @@ runs:
           git fetch origin ${{ steps.pick-deploy-branch.outputs.deploy_branch }}
           git reset --hard origin/${{ steps.pick-deploy-branch.outputs.deploy_branch }}
           mkdir -p badges
-          mv $RUNNER_TEMP/coverage.svg badges/
-          git add badges/coverage.svg
+          mv $RUNNER_TEMP/tests.svg badges/
+          git add badges/tests.svg
           git commit -m 'Update badges [skip ci]'
           git push
 
